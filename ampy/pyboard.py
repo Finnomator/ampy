@@ -151,7 +151,7 @@ class Pyboard:
     def close(self):
         self.serial.close()
 
-    def read_until(self, min_num_bytes, ending, timeout=10, data_consumer=None):
+    def read_until(self, min_num_bytes, ending, timeout=None, data_consumer=None):
         data = self.serial.read(min_num_bytes)
         if data_consumer:
             data_consumer(data)
@@ -225,13 +225,13 @@ class Pyboard:
 
     def follow(self, timeout, data_consumer=None):
         # wait for normal output
-        data = self.read_until(1, b'\x04', timeout=timeout, data_consumer=data_consumer)
+        data = self.read_until(1, b'\x04', timeout=None, data_consumer=data_consumer)
         if not data.endswith(b'\x04'):
             raise PyboardError('timeout waiting for first EOF reception')
         data = data[:-1]
 
         # wait for error output
-        data_err = self.read_until(1, b'\x04', timeout=timeout)
+        data_err = self.read_until(1, b'\x04', timeout=None)
         if not data_err.endswith(b'\x04'):
             raise PyboardError('timeout waiting for second EOF reception')
         data_err = data_err[:-1]
@@ -261,7 +261,7 @@ class Pyboard:
         if data != b'OK':
             raise PyboardError('could not exec command')
 
-    def exec_raw(self, command, timeout=10, data_consumer=None):
+    def exec_raw(self, command, timeout=None, data_consumer=None):
         self.exec_raw_no_follow(command);
         return self.follow(timeout, data_consumer)
 
